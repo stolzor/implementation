@@ -8,7 +8,7 @@ from nltk.tokenize import RegexpTokenizer
 # nltk.download('punkt') # use it if you needed
 
 
-def load_dict() -> Dict:
+def load_dict() -> Dict[str, int]:
     with open("words_dictionary.json", "r") as f:
         voc = json.load(f)
     return voc
@@ -20,13 +20,13 @@ def tokenize(example: str) -> List[str]:
     return words
 
 
-def get_example(example: str | None = None) -> Dict[str, int]:
+def get_example(example: str | None = None) -> List[int]:
     voc: Dict = load_dict()
     if example is None:
-        example = "Hello, world! I can calculate!"
+        example = "Hello world! Go play games in the street!"
     words = tokenize(example)
-    word2index = {word: voc[word] for word in words}
-    return word2index
+    indexs = [voc[word] for word in words]
+    return indexs
 
 
 if __name__ == "__main__":
