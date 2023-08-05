@@ -6,7 +6,8 @@ class PositionWiseFFN(nn.Module):
         super().__init__()
         self.weight_1 = nn.Linear(d_model, inner_dim)
         self.weight_2 = nn.Linear(inner_dim, d_model)
+        self.relu = nn.ReLU()
 
     def forward(self, x):
-        x = self.weight_2(self.weight_1(x))
+        x = self.weight_2(self.relu(self.weight_1(x)))
         return x
