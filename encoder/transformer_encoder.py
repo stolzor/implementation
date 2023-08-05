@@ -1,4 +1,5 @@
 from typing import List
+import copy
 
 import torch
 from torch import nn
@@ -18,14 +19,17 @@ class TransformerEncoder(nn.Module):
         inner_dim: int = 2048,
     ) -> None:
         super().__init__()
-        self.multi_head_1 = MultiHeadAttention(d_model, sen_len, n_blocks)
+        self.multi_head = MultiHeadAttention(d_model, sen_len, n_blocks)
         self.add_norm_1 = AddNorm(enter_shape)
-
-        self.multi_head_2 = MultiHeadAttention(d_model, sen_len, n_blocks)
+        self.feed_forward = PositionWiseFFN(d_model, inner_dim)
         self.add_norm_2 = AddNorm(enter_shape)
 
-        self.feed_forward = PositionWiseFFN(d_model, inner_dim)
-        self.add_norm_3 = AddNorm(enter_shape)
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        ...
+        old_x = copy.deepcopy(x)
+        x = self.multi_head(x)
+        x = self.add_norm_1(old_x, x)
+
+        old_x = copy.deepcopy(x)
+        x = self.feed_forward(x)
+        x = self.add_norm_2(old_x, x)
+        return x

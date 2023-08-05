@@ -6,7 +6,9 @@ from .scaled_dot_attention import ScaledDotProductAttention
 
 
 class MultiHeadAttention(nn.Module, BaseAttention):
-    def __init__(self, d_model: int, size: int, n_blocks: int) -> None:
+    def __init__(
+        self, d_model: int, size: int, n_blocks: int, masked: bool = False
+    ) -> None:
         super().__init__()
         assert d_model % n_blocks == 0, "Embedding size / N blocks should == 0"
         self.size = size
