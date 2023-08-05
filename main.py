@@ -1,8 +1,8 @@
 from typing import List
 
 from for_test import get_example
-from attention.models.scaled_dot_attention import ScaledDotProductAttention
-from attention.models.multi_head_attention import MultiHeadAttention
+from attention.scaled_dot_attention import ScaledDotProductAttention
+from attention.multi_head_attention import MultiHeadAttention
 from attention.settings import SettingAttention
 
 

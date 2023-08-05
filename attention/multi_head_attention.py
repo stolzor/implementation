@@ -23,6 +23,7 @@ class MultiHeadAttention(nn.Module, BaseAttention):
         )
 
     def forward(self, x):
+        # TODO: delete positional encoding after write all pipeline transformer
         x = self.positional_encoding(x)
         x = torch.unsqueeze(x, 0)  # add batch_size axis
         old_size = x.shape
