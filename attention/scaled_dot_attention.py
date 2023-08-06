@@ -33,7 +33,7 @@ class ScaledDotProductAttention(nn.Module, BaseAttention):
                 f"You are using {self.usage}, but the list does not contain 1 "
                 "items (he contain {len(x)})"
             )
-            x = self.positional_encoding(x[0])
+            x = x[0]
             key = self.key(x)
             query = self.query(x)
             value = self.value(x)
@@ -51,7 +51,8 @@ class ScaledDotProductAttention(nn.Module, BaseAttention):
             mask = torch.triu(torch.ones(*x.shape[-2:]), diagonal=1)
             mask[mask.bool()] = -float("inf")
             x += mask
-        result = (fn.softmax(x, dim=1)) @ value
+
+        result = (fn.softmax(x, dim=-1)) @ value
         return result
 
 

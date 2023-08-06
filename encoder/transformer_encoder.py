@@ -1,5 +1,4 @@
 from typing import List
-import copy
 
 import torch
 from torch import nn
@@ -25,11 +24,11 @@ class TransformerEncoder(nn.Module):
         self.add_norm_2 = AddNorm(enter_shape)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        old_x = copy.deepcopy(x)
-        x = self.multi_head(x)
+        old_x = x.clone()
+        x, kvq = self.multi_head(x, x, x)
         x = self.add_norm_1(old_x, x)
 
-        old_x = copy.deepcopy(x)
+        old_x = x.clone()
         x = self.feed_forward(x)
         x = self.add_norm_2(old_x, x)
-        return x
+        return x, kvq
