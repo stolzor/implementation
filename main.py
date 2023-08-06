@@ -9,7 +9,7 @@ from attention.settings import SettingAttention
 example_ids: List[int] = get_example(None)
 
 scaled_attention = ScaledDotProductAttention(
-    SettingAttention.D_MODELS, SettingAttention.MAX_LEN
+    SettingAttention.D_MODELS, SettingAttention.MAX_LEN, True
 )
 multi_attention = MultiHeadAttention(
     SettingAttention.D_MODELS, SettingAttention.MAX_LEN, 4

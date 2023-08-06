@@ -7,11 +7,11 @@ from .scaled_dot_attention import ScaledDotProductAttention
 
 class MultiHeadAttention(nn.Module, BaseAttention):
     def __init__(
-        self, d_model: int, size: int, n_blocks: int, masked: bool = False
+        self, d_model: int, sent_len: int, n_blocks: int, masked: bool = False
     ) -> None:
         super().__init__()
-        assert d_model % n_blocks == 0, "Embedding size / N blocks should == 0"
-        self.size = size
+        assert d_model % n_blocks == 0, "Embedding sent_len / N blocks should == 0"
+        self.sent_len = sent_len
         self.d_model = d_model
         self.n_blocks = n_blocks
 
@@ -21,7 +21,7 @@ class MultiHeadAttention(nn.Module, BaseAttention):
         self.o = nn.Linear(self.d_model, self.d_model)
 
         self.attention = ScaledDotProductAttention(
-            self.d_model // self.n_blocks, self.size, "multi"
+            self.d_model // self.n_blocks, self.sent_len, True, "multi"
         )
 
     def forward(self, x):
