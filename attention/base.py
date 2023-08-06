@@ -23,11 +23,11 @@ class BaseAttention(ABC):
             ids = ids.unsqueeze(0)
 
         h, w = ids.shape
-        pad_ids = torch.zeros((self.size, self.d_model))
+        pad_ids = torch.zeros((self.sent_len, self.d_model))
         pad_ids[:h, :w] += pad_ids[:h, :w] + ids
 
-        PE = torch.zeros((self.size, self.d_model))
-        pos = torch.arange(self.size).unsqueeze(1)
+        PE = torch.zeros((self.sent_len, self.d_model))
+        pos = torch.arange(self.sent_len).unsqueeze(1)
         div_term = torch.exp(
             torch.arange(0, self.d_model, 2) * (-math.log(10000.0) / self.d_model)
         )
