@@ -28,20 +28,17 @@ class MultiHeadAttention(nn.Module, BaseAttention):
     def forward(
         self, key: torch.Tensor, value: torch.Tensor, query: torch.Tensor
     ) -> torch.Tensor:
-        key, value, query = list(
-            map(lambda x: torch.unsqueeze(x, 0), [key, value, query])
-        )  # add batch_size axis
-
         old_size = key.shape
         key = self.k(key)
         value = self.v(value)
         query = self.q(query)
-        x = self.attention(list(map(lambda x: self.transpose(x), [key, value, query])))
-        # print("x inner", x[0][0])
-        x = x.reshape(*old_size)
+        attention = self.attention(
+            list(map(lambda x: self.transpose(x), [key, value, query]))
+        )
+        x = attention.reshape(*old_size)
         x = self.o(x)
 
-        return x, [key, value, query]
+        return x, attention
 
     def transpose(self, x):
         sizes = x.shape

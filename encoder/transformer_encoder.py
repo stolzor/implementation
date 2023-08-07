@@ -25,10 +25,10 @@ class TransformerEncoder(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         old_x = x.clone()
-        x, kvq = self.multi_head(x, x, x)
+        x, attention = self.multi_head(x, x, x)
         x = self.add_norm_1(old_x, x)
 
         old_x = x.clone()
         x = self.feed_forward(x)
         x = self.add_norm_2(old_x, x)
-        return x, kvq
+        return x, attention
