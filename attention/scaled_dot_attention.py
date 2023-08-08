@@ -14,6 +14,7 @@ class ScaledDotProductAttention(nn.Module, BaseAttention):
         sent_len: int | None = None,
         mask: bool = False,
         usage: Union[Literal["single"], Literal["multi"]] = "single",
+        dropout: float = 0.1,
     ) -> None:
         super().__init__()
         self.usage = usage
@@ -23,6 +24,7 @@ class ScaledDotProductAttention(nn.Module, BaseAttention):
         if self.sent_len is None:
             self.sent_len = 100
 
+        self.dropout = nn.Dropout(dropout)
         self.key = nn.Linear(self.d_model, self.sent_len)
         self.query = nn.Linear(self.d_model, self.sent_len)
         self.value = nn.Linear(self.d_model, self.sent_len)
@@ -52,7 +54,7 @@ class ScaledDotProductAttention(nn.Module, BaseAttention):
             mask[mask.bool()] = -float("inf")
             x += mask
 
-        result = (fn.softmax(x, dim=-1)) @ value
+        result = self.dropout((fn.softmax(x, dim=-1))) @ value
         return result
 
 
