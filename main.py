@@ -3,6 +3,7 @@ from typing import List
 import torch
 
 from for_test import get_example
+from pos_encoder.positional_encoder import PositionalEncoder
 from attention.scaled_dot_attention import ScaledDotProductAttention
 from attention.multi_head_attention import MultiHeadAttention
 from attention.settings import SettingAttention
@@ -12,7 +13,7 @@ from transformer.transformer import Transformer
 
 
 example_ids: List[int] = get_example(None)
-
+pos_encoder = PositionalEncoder(SettingAttention.D_MODELS, SettingAttention.MAX_LEN)
 scaled_attention = ScaledDotProductAttention(
     SettingAttention.D_MODELS, SettingAttention.MAX_LEN, True
 )
@@ -30,7 +31,7 @@ transformer = Transformer(
 )
 
 
-pos_encod = torch.unsqueeze(scaled_attention.positional_encoding(example_ids), 0)
+pos_encod = torch.unsqueeze(pos_encoder(example_ids), 0)
 
 out_scaled = scaled_attention(pos_encod)
 print("Scaled dot product attention: ", out_scaled.shape)
@@ -44,5 +45,5 @@ print("Transformer encoder: ", out_encoder[0].shape)
 out_decoder = transformer_decoder(out_encoder[0], pos_encod)
 print("Transformer decoder: ", out_decoder.shape)
 
-out_transformer = transformer(pos_encod)
+out_transformer = transformer(example_ids)
 print("Transformer: ", out_transformer.shape)
