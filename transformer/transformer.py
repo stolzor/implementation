@@ -17,7 +17,7 @@ class Transformer(nn.Module):
         d_model: int,
         sent_len: int,
         inner_dim: int = 2048,
-        dropout: float = 0.1
+        dropout: float = 0.1,
     ) -> None:
         super().__init__()
         self.n_blocks = n_blocks
@@ -26,9 +26,9 @@ class Transformer(nn.Module):
         self.d_model = d_model
         self.sent_len = sent_len
         self.inner_dim = inner_dim
+        self.dropout = dropout
 
         self.pos_encoder = PositionalEncoder(self.d_model, self.sent_len, dropout)
-        self.dropout = nn.Dropout(dropout)
         self.encoders = nn.ModuleList(
             [
                 TransformerEncoder(
@@ -37,6 +37,7 @@ class Transformer(nn.Module):
                     self.sent_len,
                     self.enter_shape,
                     self.inner_dim,
+                    self.dropout,
                 )
                 for _ in range(n_layers)
             ]
@@ -49,26 +50,32 @@ class Transformer(nn.Module):
                     self.sent_len,
                     self.enter_shape,
                     self.inner_dim,
+                    self.dropout,
                 )
                 for _ in range(n_layers)
             ]
         )
 
-        self.linear = nn.Linear(self.d_model, 1)
+        self.linear = nn.Linear(self.d_model, self.d_model)
         self.softmax = nn.Softmax(dim=-1)
 
-    def forward(self, x: List[int] | torch.Tensor) -> torch.Tensor:
+    def add_ax(self, x):
         if isinstance(x, list):
             x = torch.unsqueeze(self.pos_encoder(x), 0)
-        x = self.dropout(x)
+        return x
+
+    def forward(
+        self, src_sen: List[int] | torch.Tensor, tgt_sen: List[int] | torch.Tensor
+    ) -> torch.Tensor:
+        src_sen, tgt_sen = self.add_ax(src_sen), self.add_ax(tgt_sen)
 
         for i in range(self.n_layers):
-            encoder_output, attention = self.encoders[i](x)
+            encoder_output, _ = self.encoders[i](src_sen)
 
         for i in range(self.n_layers):
-            x = self.decoders[i](encoder_output, x)
+            x = self.decoders[i](encoder_output, tgt_sen)
 
         x = self.linear(x)
-        x = self.softmax(x).reshape(x.shape[0], self.sent_len)
+        x = self.softmax(x)
 
         return x
