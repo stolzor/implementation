@@ -27,15 +27,16 @@ class TransformerDecoder(nn.Module):
         self.feed_forward = PositionWiseFFN(d_model, inner_dim)
         self.add_norm_3 = AddNorm(enter_shape)
 
-    def forward(self, encoder_kv: List[torch.Tensor], x: torch.Tensor) -> torch.Tensor:
-        assert len(encoder_kv) == 2, "encoder must consist array key and value"
-        x = self.multi_head_1.positional_encoding(x)
+    def forward(
+        self, encoder_output: List[torch.Tensor], x: torch.Tensor
+    ) -> torch.Tensor:
+        assert len(encoder_output) == 1, "encoder must consist array key and value"
         old_x = x.clone()
         x, _ = self.multi_head_1(x, x, x)
         x = self.add_norm_1(old_x, x)
 
         old_x = x.clone()
-        x, _ = self.multi_head_2(*encoder_kv, x)
+        x, _ = self.multi_head_2(encoder_output, encoder_output, x)
         x = self.add_norm_2(old_x, x)
 
         old_x = x.clone()
