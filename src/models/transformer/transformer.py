@@ -3,9 +3,9 @@ from typing import List
 import torch
 from torch import nn
 
-from encoder.transformer_encoder import TransformerEncoder
-from decoder.transformer_decoder import TransformerDecoder
-from pos_encoder.positional_encoder import PositionalEncoder
+from src.models.encoder.transformer_encoder import TransformerEncoder
+from src.models.decoder.transformer_decoder import TransformerDecoder
+from src.models.pos_encoder.positional_encoder import PositionalEncoder
 
 
 class Transformer(nn.Module):

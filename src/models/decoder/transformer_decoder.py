@@ -3,9 +3,9 @@ from typing import List
 import torch
 from torch import nn
 
-from attention import *
-from normalization import *
-from feed_forward import *
+from src.models.attention import *
+from src.models.normalization import *
+from src.models.feed_forward import *
 
 
 class TransformerDecoder(nn.Module):
