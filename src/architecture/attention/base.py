@@ -1,8 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
-import math
-
-import torch
 
 
 class BaseAttention(ABC):

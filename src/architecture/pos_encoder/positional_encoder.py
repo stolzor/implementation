@@ -10,7 +10,7 @@ class PositionalEncoder(nn.Module):
         super().__init__()
         self.d_model = d_model
         self.sent_len = sent_len
-    
+
     def forward(self, ids: List[int | float]) -> None:
         if not isinstance(ids, torch.Tensor):
             ids = torch.Tensor(ids)
