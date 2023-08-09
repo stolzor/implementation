@@ -11,3 +11,4 @@
 7. Search task for solving
 8. Write inference
 9. Write (opt.) and train tokenizer
+10. Write base setting class for architecture
