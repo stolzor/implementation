@@ -7,7 +7,7 @@
 3. ~~Compare architecture with paper~~
 4. Check and write typing
 5. ~~Write optimizer and loss function~~
-6. Search task for solving
+6. ~~Search task for solving~~
 7. Write inference
 8. Write (opt.) and train tokenizer
 9. Write base setting class for architecture

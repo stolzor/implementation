@@ -1,11 +1,10 @@
 import torch
 from torch import nn
 
-from .base import BaseAttention
 from .scaled_dot_attention import ScaledDotProductAttention
 
 
-class MultiHeadAttention(nn.Module, BaseAttention):
+class MultiHeadAttention(nn.Module):
     def __init__(
         self, d_model: int, sent_len: int, n_blocks: int, masked: bool = True
     ) -> None:

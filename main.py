@@ -3,13 +3,13 @@ from typing import List
 import torch
 
 from for_test import get_example
-from src.models.pos_encoder.positional_encoder import PositionalEncoder
-from src.models.attention.scaled_dot_attention import ScaledDotProductAttention
-from src.models.attention.multi_head_attention import MultiHeadAttention
-from src.models.attention.settings import SettingAttention
-from src.models.encoder.transformer_encoder import TransformerEncoder
-from src.models.decoder.transformer_decoder import TransformerDecoder
-from src.models.transformer.transformer import Transformer
+from src.architecture.positional_encoder import PositionalEncoder
+from src.architecture.scaled_dot_attention import ScaledDotProductAttention
+from src.architecture.multi_head_attention import MultiHeadAttention
+from src.architecture.settings import SettingAttention
+from src.architecture.transformer_encoder import TransformerEncoder
+from src.architecture.transformer_decoder import TransformerDecoder
+from src.architecture.transformer import Transformer
 
 
 example_ids: List[int] = get_example(None)

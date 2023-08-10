@@ -4,10 +4,8 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as fn
 
-from .base import BaseAttention
 
-
-class ScaledDotProductAttention(nn.Module, BaseAttention):
+class ScaledDotProductAttention(nn.Module):
     def __init__(
         self,
         d_model: int,
