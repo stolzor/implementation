@@ -1,19 +1,23 @@
-from typing import Tuple, Callable
+from typing import Tuple, Callable, Iterable
 import torch
 
 from torch.optim import Optimizer
+
+from ..scheduler.scheduler import update_lrate
 
 
 class Adam(Optimizer):
     def __init__(
         self,
-        params: torch.Tensor,
+        params: Iterable[torch.Tensor],
         lr: float = 1e-3,
         betas: Tuple[float] = (0.9, 0.999),
         eps: float = 1e-8,
         weight_decay: float = 0.0,
         correct_bias: bool = True,
+        warmup: int = 4000,
     ) -> None:
+        params = list(params)
         if not isinstance(betas, tuple):
             raise TypeError(
                 f"The betas parameter must be of the tuple type, not a {type(betas)}"
@@ -25,12 +29,15 @@ class Adam(Optimizer):
             raise ValueError(f"Values in beta: {betas} should be in [0, 1]")
         if eps < 0:
             raise ValueError(f"Invalid epsilon value: {eps} should be >= 0.0")
+        d_model = params[0].shape
         defaults = dict(
             lr=lr,
             betas=betas,
             eps=eps,
             weight_decay=weight_decay,
             correct_bias=correct_bias,
+            d_model=d_model,
+            warmup=warmup,
         )
         super(Adam, self).__init__(params, defaults)
 
@@ -42,9 +49,9 @@ class Adam(Optimizer):
                 loss = closure()
 
         if "step" not in self.state.keys():
-            self.state["state"] = 1
-        else:
-            self.state["step"] += 1
+            self.state["state"] = 0
+
+        self.state["step"] += 1
 
         for group in self.param_groups:
             for p in group["params"]:
@@ -53,6 +60,8 @@ class Adam(Optimizer):
                 grad = p.grad.data
                 beta_1, beta_2 = group["betas"]
                 step = group["step"]
+                warmup = group["warmup"]
+                d_model = group["d_model"]
 
                 if self.state["step"] == 1:
                     self.state["momentum_1"] = torch.zeros_like(p.data)
@@ -69,7 +78,12 @@ class Adam(Optimizer):
                     first_unbiased_est = first_moment_estimate / (1 - beta_1**step)
                     second_unbiased_est = second_moment_estimate / (1 - beta_2**step)
 
-                p.data -= self.lr * (
+                if step <= 4000:
+                    lrate = update_lrate(d_model, step, warmup)
+                else:
+                    lrate = group["lr"]
+
+                p.data -= lrate * (
                     first_unbiased_est / (second_unbiased_est**0.5 + step)
                 )
 

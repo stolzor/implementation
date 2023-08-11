@@ -10,6 +10,8 @@ from src.architecture.settings import SettingAttention
 from src.architecture.transformer_encoder import TransformerEncoder
 from src.architecture.transformer_decoder import TransformerDecoder
 from src.architecture.transformer import Transformer
+from src.loss.loss import CrossEntropyLoss
+from src.optimization.optimization import Adam
 
 
 example_ids: List[int] = get_example(None)
@@ -47,3 +49,6 @@ print("Transformer decoder: ", out_decoder.shape)
 
 out_transformer = transformer(example_ids, example_ids)
 print("Transformer: ", out_transformer.shape)
+
+optim = Adam(params=transformer.parameters())
+loss = CrossEntropyLoss(2)
