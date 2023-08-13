@@ -26,3 +26,6 @@ class MachineTranslation(nn.Module):
             inner_dim=inner_dim,
             dropout=dropout,
         )
+
+    def translate(self, inp_sentence: str, out_sentence: str) -> str:
+        ...
