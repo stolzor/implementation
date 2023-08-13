@@ -10,7 +10,7 @@ from tokenizers.pre_tokenizers import Whitespace
 from tokenizers.trainers import BpeTrainer
 
 
-def get_bpe(data, vocab_size: int):
+def get_bpe(data, vocab_size: int) -> Tokenizer:
     tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
     tokenizer.pre_tokenizer = Whitespace()
     tokenizer.normalizer = Sequence([NFKC(), StripAccents(), Lowercase()])
@@ -27,7 +27,7 @@ def get_bpe(data, vocab_size: int):
             yield data["de"][i : i + batch_size]
 
     tokenizer.train_from_iterator(
-        _batch_generator_src(), trainer=trainer_src, length=len(data["en"])
+        _batch_generator_src(), trainer=trainer_src, length=len(data)
     )
 
     tokenizer.post_processor = TemplateProcessing(

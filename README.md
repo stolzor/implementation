@@ -9,5 +9,8 @@
 5. ~~Write optimizer and loss function~~
 6. ~~Search task for solving~~
 7. Write inference
-8. Write (opt.) and train tokenizer
+8. ~~Write (opt.) and train tokenizer~~
 9. Write base setting class for architecture
+10. Write train func
+11. Write preprocessing dataset
+12. Write smart-batcher

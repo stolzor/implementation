@@ -3,7 +3,7 @@ from typing import List
 import torch
 from torch import nn
 
-from . import *
+from .layer_norm import LayerNorm
 
 
 class AddNorm(nn.Module):
