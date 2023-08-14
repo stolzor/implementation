@@ -13,4 +13,4 @@
 9. Write base setting class for architecture
 10. Write train func
 11. Write preprocessing dataset
-12. Write smart-batcher
+12. ~~Write smart-batcher~~
