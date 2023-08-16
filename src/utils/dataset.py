@@ -33,7 +33,7 @@ class CustomTranslationDataset(Dataset):
 def preprocesser_data(data: pd.DataFrame, tokenizer: Tokenizer) -> ...:
     if os.path.isfile("data/wmt14-train-preprocessed.parquet"):
         print("Preprocessed dataframe exists")
-        return pd.read_parquet("data/wmt14-train-preprocessed.parquet")
+        return pd.read_parquet("data/wmt14-train-preprocessed.parquet").iloc[:1000, :]
 
     print("Start tokenized...")
     data["en"] = data["en"].apply(lambda x: tokenizer.encode(x).ids)
@@ -57,7 +57,7 @@ def random_batcher(
     batch_ordered_labels = []
 
     while len(sentences) > 0:
-        if (len(batch_ordered_sentences) % 500) == 0:
+        if (len(batch_ordered_sentences) % 1000) == 0:
             print("Selected {} batches".format(len(batch_ordered_sentences)))
 
         to_take = min(batch_size, len(sentences))
@@ -80,26 +80,38 @@ def add_padding(
     arr_inputs = []
     arr_attn_masks = []
     arr_labels = []
-
+    pad_token_id = tokenizer.get_vocab()["[PAD]"]
     for batch_inputs, batch_labels in zip(sentnences, labels):
         batch_padded_inputs = []
         batch_attn_masks = []
+        batch_padded_target = []
 
-        max_size = max([len(s) for s in batch_inputs])
+        inp_max_size = max([len(s) for s in batch_inputs])
+        trg_max_size = max([len(s) for s in batch_labels])
 
-        for s in batch_inputs:
-            num_pads = max_size - len(s)
-            padded_input = s + [tokenizer.pad_token_id] * num_pads
+        for i, s in enumerate(batch_inputs):
+            inp_num_pads = inp_max_size - len(s)
+            trg_num_pads = trg_max_size - len(batch_labels[i])
 
-            attn_masks = [1] * len(s) + [0] * num_pads
+            padded_input = list(s) + [pad_token_id] * inp_num_pads
+            padded_target = list(batch_labels[i]) + [pad_token_id] * trg_num_pads
+
+            attn_masks = [1] * len(s) + [0] * inp_num_pads
             batch_padded_inputs.append(padded_input)
             batch_attn_masks.append(attn_masks)
+            batch_padded_target.append(padded_target)
 
         arr_inputs.append(torch.tensor(batch_padded_inputs))
         arr_attn_masks.append(torch.tensor(batch_attn_masks))
-        arr_labels.append(torch.tensor(batch_labels))
+        arr_labels.append(torch.tensor(batch_padded_target))
 
-    return arr_inputs, arr_attn_masks, arr_labels
+    return (
+        torch.stack(arr_inputs, -1),
+        torch.stack(
+            arr_attn_masks - 1,
+        ),
+        torch.stack(arr_labels, -1),
+    )
 
 
 def smart_batchers(
@@ -107,6 +119,7 @@ def smart_batchers(
 ) -> List[List[int]]:
     sentences = data["en"].tolist()
     labels = data["de"].tolist()
+
     ordered_sentnces, ordered_labels = random_batcher(sentences, labels, batch_size)
     inputs, attn_masks, labels = add_padding(
         ordered_sentnces, ordered_labels, tokenizer
@@ -131,10 +144,17 @@ def get_dataloader(
     train_size, valid_size, _ = train_valid_test_sizes
 
     if smart_batcher:
-        train, valid, test = np.split(
-            smart_batchers(data, batch_size, tokenizer),
+        arr_inputs, arr_attn_masks, arr_labels = smart_batchers(
+            data, batch_size, tokenizer
+        )
+        train_idx, valid_idx, test_idx = np.split(
+            np.arange(len(arr_inputs)),
             [int(train_size * len(data)), int((train_size + valid_size) * len(data))],
         )
+        train, valid, test = (arr_inputs[torch.from_numpy(train_idx).int()],)
+        arr_attn_masks[torch.from_numpy(valid_idx).int()], arr_labels[
+            torch.from_numpy(test_idx).int()
+        ]
     else:
         train, valid, test = np.split(
             data.sample(frac=1, random_state=42),
@@ -156,7 +176,7 @@ def get_dataloader(
 
 
 if __name__ == "__main__":
-    df = pd.read_parquet("data/wmt14-train-all.parquet")
+    df = pd.read_parquet("data/wmt14-train.parquet")
     vocab_size = 60000
 
     train, valid, test = get_dataloader(df, vocab_size, 128)
