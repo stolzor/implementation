@@ -37,7 +37,6 @@ def get_bpe(data, vocab_size: int) -> Tokenizer:
             ("[EOS]", 3),
         ],
     )
-    tokenizer = Tokenizer.from_file("data/tokenizer")
 
     return tokenizer
 
