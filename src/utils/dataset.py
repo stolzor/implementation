@@ -8,7 +8,7 @@ import numpy as np
 from torch.utils.data import Dataset
 from tokenizers import Tokenizer
 
-from .tokenizer import get_bpe
+from tokenizer import get_bpe
 
 
 class CustomTranslationDataset(Dataset):
@@ -56,32 +56,33 @@ def random_batcher(
     batch_ordered_sentences = []
     batch_ordered_labels = []
 
-    while len(sentences) > 0:
+    samples = sorted(zip(sentences, labels), key=lambda x: len(x[0]))
+
+    while len(samples) > 0:
         if (len(batch_ordered_sentences) % 1000) == 0:
             print("Selected {} batches".format(len(batch_ordered_sentences)))
 
-        to_take = min(batch_size, len(sentences))
-        select = random.randint(0, len(sentences) - to_take)
-        batch_sent = sentences[select : select + to_take]
-        batch_lab = labels[select : select + to_take]
+        to_take = min(batch_size, len(samples))
+        select = random.randint(0, len(samples) - to_take)
+        batch_samples = samples[select : select + to_take]
 
-        batch_ordered_sentences.append([i for i in batch_sent])
-        batch_ordered_labels.append([i for i in batch_lab])
+        batch_ordered_sentences.append([i[0] for i in batch_samples])
+        batch_ordered_labels.append([i[1] for i in batch_samples])
 
-        del sentences[select : select + to_take]
-        del labels[select : select + to_take]
+        del samples[select : select + to_take]
 
-    return [batch_ordered_sentences, batch_ordered_labels]
+    return batch_ordered_sentences, batch_ordered_labels
 
 
 def add_padding(
-    sentnences: List[str], labels: List[str], tokenizer: Tokenizer
+    sentences: List[int], labels: List[int], tokenizer: Tokenizer
 ) -> List[List[torch.Tensor]]:
     arr_inputs = []
     arr_attn_masks = []
     arr_labels = []
     pad_token_id = tokenizer.get_vocab()["[PAD]"]
-    for batch_inputs, batch_labels in zip(sentnences, labels):
+
+    for batch_inputs, batch_labels in zip(sentences, labels):
         batch_padded_inputs = []
         batch_attn_masks = []
         batch_padded_target = []
@@ -110,14 +111,12 @@ def add_padding(
 
 def smart_batchers(
     data: pd.DataFrame, batch_size: int, tokenizer: Tokenizer
-) -> List[List[torch.tensor]]:
+) -> Tuple[List[torch.tensor]]:
     sentences = data["en"].tolist()
     labels = data["de"].tolist()
 
-    ordered_sentnces, ordered_labels = random_batcher(sentences, labels, batch_size)
-    inputs, attn_masks, labels = add_padding(
-        ordered_sentnces, ordered_labels, tokenizer
-    )
+    batch_sentences, batch_labels = random_batcher(sentences, labels, batch_size)
+    inputs, attn_masks, labels = add_padding(batch_sentences, batch_labels, tokenizer)
     return inputs, attn_masks, labels
 
 
@@ -155,10 +154,10 @@ def get_dataset(
     print("Train data preprocessing...")
     train = smart_batchers(train, batch_size, tokenizer)
 
-    print("Valid data preprocessing...")
+    print("\nValid data preprocessing...")
     valid = smart_batchers(valid, batch_size, tokenizer)
 
-    print("Test data preprocessing...")
+    print("\nTest data preprocessing...")
     test = smart_batchers(test, batch_size, tokenizer)
 
     train = CustomTranslationDataset(train, vocab_size)
@@ -173,4 +172,5 @@ if __name__ == "__main__":
     vocab_size = 60000
 
     dataset = get_dataset(df, vocab_size, 128)
-    print(next(iter(dataset["train"])))
+    batch = next(iter(dataset["train"]))
+    print(batch["src"].shape, batch["trg"].shape, batch["attn_masks"].shape)
