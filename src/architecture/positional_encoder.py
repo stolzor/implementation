@@ -1,4 +1,3 @@
-from typing import List
 import math
 
 import torch
@@ -10,19 +9,13 @@ class PositionalEncoder(nn.Module):
         super().__init__()
         self.d_model = d_model
         self.sent_len = sent_len
+        self.device = torch.device("cuda:0")
 
-    def forward(self, ids: List[int | float]) -> None:
+    def forward(self, ids: torch.Tensor) -> None:
         if not isinstance(ids, torch.Tensor):
-            ids = torch.Tensor(ids)
+            raise TypeError("Enter value should consists type torch.Tensor")
 
-        if len(ids.shape) == 1:
-            ids = ids.unsqueeze(0)
-
-        h, w = ids.shape
-        pad_ids = torch.zeros((self.sent_len, self.d_model))
-        pad_ids[:h, :w] += pad_ids[:h, :w] + ids
-
-        PE = torch.zeros((self.sent_len, self.d_model))
+        PE = torch.zeros((self.sent_len, self.d_model)).to(self.device)
         pos = torch.arange(self.sent_len).unsqueeze(1)
         div_term = torch.exp(
             torch.arange(0, self.d_model, 2) * (-math.log(10000.0) / self.d_model)
@@ -31,4 +24,4 @@ class PositionalEncoder(nn.Module):
         PE[:, 0::2] = torch.sin(pos * div_term)
         PE[:, 1::2] = torch.cos(pos * div_term)
 
-        return pad_ids + PE
+        return ids + PE

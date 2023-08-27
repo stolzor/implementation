@@ -8,7 +8,7 @@ import numpy as np
 from torch.utils.data import Dataset
 from tokenizers import Tokenizer
 
-from tokenizer import get_bpe
+from .tokenizer import get_bpe
 
 
 class CustomTranslationDataset(Dataset):
@@ -24,16 +24,16 @@ class CustomTranslationDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def __getitem__(self, index) -> ...:
+    def __getitem__(self, index) -> Dict[str, torch.Tensor]:
         src_sentence, trg_sentence = self.inputs[index], self.labels[index]
         attn_masks = self.attn_masks[index]
         return {"src": src_sentence, "trg": trg_sentence, "attn_masks": attn_masks}
 
 
-def preprocesser_data(data: pd.DataFrame, tokenizer: Tokenizer) -> ...:
+def preprocesser_data(data: pd.DataFrame, tokenizer: Tokenizer) -> pd.DataFrame:
     if os.path.isfile("data/wmt14-train-preprocessed.parquet"):
         print("Preprocessed dataframe exists")
-        return pd.read_parquet("data/wmt14-train-preprocessed.parquet").iloc[:1000, :]
+        return pd.read_parquet("data/wmt14-train-preprocessed.parquet")
 
     print("Start tokenized...")
     data["en"] = data["en"].apply(lambda x: tokenizer.encode(x).ids)

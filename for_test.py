@@ -1,32 +1,14 @@
-import json
-from typing import List, Dict
+from typing import List
 
-# import nltk
-from nltk.tokenize import RegexpTokenizer
-
-
-# nltk.download('punkt') # use it if you needed
-
-
-def load_dict() -> Dict[str, int]:
-    with open("words_dictionary.json", "r") as f:
-        voc = json.load(f)
-    return voc
-
-
-def tokenize(example: str) -> List[str]:
-    tokenizer = RegexpTokenizer(r"\w+")
-    words = [i.lower() for i in tokenizer.tokenize(example)]
-    return words
+from src.utils.tokenizer import get_bpe
 
 
 def get_example(example: str | None = None) -> List[int]:
-    voc: Dict = load_dict()
+    tokenizer = get_bpe(None, None)
     if example is None:
         example = "Hello world! Go play games in the street!"
-    words = tokenize(example)
-    indexs = [voc[word] for word in words]
-    return indexs
+    words = tokenizer.encode(example).ids
+    return words
 
 
 if __name__ == "__main__":
